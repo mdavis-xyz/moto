@@ -166,8 +166,9 @@ class TransactionCanceledException(ValueError):
         super(TransactionCanceledException, self).__init__(msg)
 
 
-class EmptyKeyAttributeException(MockValidationException):
-    empty_str_msg = "One or more parameter values were invalid: An AttributeValue may not contain an empty string"
+class UpdateKeyException(MockValidationException):
+    update_key_msg = "One or more parameter values were invalid: Cannot update attribute {key_name}. This attribute is part of the key"
 
-    def __init__(self):
-        super(EmptyKeyAttributeException, self).__init__(self.empty_str_msg)
+    def __init__(self, key_name):
+        msg = self.update_key_msg.format(key_name=key_name)
+        super(EmptyKeyAttributeException, self).__init__(msg)

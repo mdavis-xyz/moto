@@ -373,6 +373,7 @@ def test_update_range_key_exception():
         "One or more parameter values were invalid: Cannot update attribute ReceivedTime. This attribute is part of the key"
     )
 
+
 @requires_boto_gte("2.9")
 @mock_dynamodb2
 def test_update_item_with_empty_string_no_exception():

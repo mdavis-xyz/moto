@@ -21,6 +21,7 @@ from moto.dynamodb2.exceptions import (
     ConditionalCheckFailed,
     TransactionCanceledException,
     EmptyKeyAttributeException,
+    UpdateKeyException,
 )
 from moto.dynamodb2.models.utilities import bytesize
 from moto.dynamodb2.models.dynamo_type import DynamoType
@@ -114,6 +115,13 @@ class Item(BaseModel):
             new_value = next(iter(update_action["Value"].values()))
             if action == "PUT" and new_value == "" and attribute_name in key_attributes:
                 raise EmptyKeyAttributeException
+
+    def validate_no_key_updates(self, attribute_updates, key_attributes):
+        for attribute_name, update_action in attribute_updates.items():
+            action = update_action.get("Action") or "PUT"  # PUT is default
+            new_value = next(iter(update_action["Value"].values()))
+            if action.upper() == "SET" and attribute_name in key_attributes:
+                raise UpdateKeyException
 
     def update_with_attribute_updates(self, attribute_updates):
         for attribute_name, update_action in attribute_updates.items():
@@ -1306,6 +1314,7 @@ class DynamoDBBackend(BaseBackend):
             item = table.get_item(hash_value, range_value)
 
         if attribute_updates:
+            item.validate_no_key_updates(attribute_updates, table.key_attributes)
             item.validate_no_empty_key_values(attribute_updates, table.key_attributes)
 
         if update_expression:
